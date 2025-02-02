@@ -1,9 +1,8 @@
 'use strict'
-// Write your module here
-// It must send an event "frames:loaded" from the top frame containing a list of { name:label } pairs,
-// which describes all the fields in each frame.
 
-// This is a template to help you get started, feel free to make your own solution.
+/**
+ * Main execution function that determines if the current window is a top frame or a child frame.
+ */
 function execute() {
 	try {
     // Step 1 Scrape Fields and Create Fields list object.
@@ -23,7 +22,10 @@ function execute() {
 
 execute();
 
-// function to handle logic for top frames, collected all data from child frames
+/**
+ * Handles logic for top frames, collected all data from child frames
+ * @param {Array} fields collected from the current frame
+ */
 function handleTopFrame(fields) {
   let allFields = [...fields];
 	let countFrames = 0
@@ -67,8 +69,10 @@ function handleTopFrame(fields) {
 
 }
 
-
-// function to handle logic for child frame 
+/**
+ * Handles logic for child frames, collected all data from nested frames
+ * @param {Array} fields collected from the current frame
+ */
 function handleChildFrame(fields) {
   // count how many iframe element in this frame 
   const childFrames = countIframes();
@@ -108,7 +112,10 @@ function handleChildFrame(fields) {
   }
 }
 
-// collects form fields from the current frame
+/**
+ * Collects form fields from the current frame
+ * @returns {Array} an array of objects {name:label}
+ */
 function getFields() {
 	let fields = [];
 
@@ -124,12 +131,18 @@ function getFields() {
 	return fields;
 }
 
-// function to count all iframe elements in a frame 
+/**
+ * Used to count all iframe elements in a frame
+ * @returns {Number} total number of iframes
+ */
 function countIframes() {
 	return document.getElementsByTagName('iframe').length;
 }
 
-// function to sends collected fields data to parent frame 
+/**
+ * Used to sends collected form fields data to the parent frame
+ * @param {Array} fields collected fields to send to the parent frame
+ */
 function sendFieldsToParent(fields) {
   try {
     // case 1: if parent frame exist, send fields data to parent frame
@@ -144,13 +157,18 @@ function sendFieldsToParent(fields) {
 	}
 }
 
-// Utility functions to check and get the top frame
-// as Karma test framework changes top & context frames.
-// Use this instead of "window.top".
+/**
+ * Utility functions to get the top frame, as Karma test framework changes top & context frames. Use this instead of "window.top".
+ * @returns {Window} the topmost frame (window object)
+ */
 function getTopFrame() {
   return window.top.frames[0];
 }
 
+/**
+ * Utility functions to check the top frame, as Karma test framework changes top & context frames.
+ * @returns {Window} the topmost frame (window object)
+ */
 function isTopFrame() {
   return window.location.pathname == '/context.html';
 }
