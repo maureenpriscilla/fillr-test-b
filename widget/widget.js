@@ -11,10 +11,7 @@ function execute() {
 
     // Step 2 Add Listener for Top Frame to Receive Fields.
     if (isTopFrame()) {
-      window.addEventListener('message', (event) => {
-        // - Merge fields from frames.
-        // - Process Fields and send event once all fields are collected.
-      });
+      handleTopFrame(fields)
     } else if (!isTopFrame()) {
       // Child frames sends Fields up to Top Frame.
       handleChildFrame(fields)
@@ -26,21 +23,50 @@ function execute() {
 
 execute();
 
-// collects form fields from the current frame
-function getFields() {
-	let fields = [];
+// function to handle logic for top frames, collected all data from child frames
+function handleTopFrame(fields) {
+  let allFields = [...fields];
+	let countFrames = 0
 
-  // loop through all input and select elements within the frame
-	document.querySelectorAll('input, select').forEach(field => {
-		const label = document.querySelector(`label[for="${field.id}"]`);
+  // count how many iframe element in this frame 
+  const totalFrames = countIframes()
 
-    // ensure fields collected have both label and name
-		if (field.name && label) {
-			fields.push({ [field.name]: label.textContent.trim() });
-		}
-	});
-	return fields;
+  // listen message from child frames
+  const message = (event) => {
+    // extract type and fields from child frame
+    const { type, fields: childFields } = event.data;
+
+    // check if the message type is correct, combined all fields
+    if (type === 'fields_data_collected') {
+      allFields = allFields.concat(childFields)
+      countFrames++
+  
+      // check if all child frames have responded, trigger custom event frames:loaded
+      if (countFrames === totalFrames) {
+  
+        // sort the fields alphabetically by the first key of each field object
+        allFields.sort((fieldA, fieldB) => {
+          const keyA = Object.keys(fieldA)[0]
+          const keyB = Object.keys(fieldB)[0]
+  
+          return keyA.localeCompare(keyB)
+        })
+  
+        // trigger custom event frames:loaded
+        document.dispatchEvent(new CustomEvent('frames:loaded', {detail: {fields: allFields}}))
+  
+        // clean up message listener
+        window.removeEventListener('message', message)
+        }
+      }
+    }
+
+  // listen message from child frames
+  window.addEventListener('message', message);
+
+
 }
+
 
 // function to handle logic for child frame 
 function handleChildFrame(fields) {
@@ -80,6 +106,22 @@ function handleChildFrame(fields) {
 
 
   }
+}
+
+// collects form fields from the current frame
+function getFields() {
+	let fields = [];
+
+  // loop through all input and select elements within the frame
+	document.querySelectorAll('input, select').forEach(field => {
+		const label = document.querySelector(`label[for="${field.id}"]`);
+
+    // ensure fields collected have both label and name
+		if (field.name && label) {
+			fields.push({ [field.name]: label.textContent.trim() });
+		}
+	});
+	return fields;
 }
 
 // function to count all iframe elements in a frame 
