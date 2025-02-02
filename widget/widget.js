@@ -52,7 +52,34 @@ function handleChildFrame(fields) {
     sendFieldsToParent(fields)
   } 
   // case 2: if there's child frame, collect fields from child frames
-  else {}
+  else {
+    let childFields = [...fields];
+		let countChildren = 0;
+
+    const message = (event) => {
+      // extract type and fields from child frame
+      const {type, fields: nestedFields} = event.data 
+
+      // check if the message type is correct, add nestedFields to childFields
+      if (type === 'fields_data_collected') {
+        childFields = childFields.concat(nestedFields)
+        countChildren++
+
+        // check if all child frames have sent the data, send collected fields back to parent frame
+        if (countChildren === childFrames) {
+          sendFieldsToParent(childFields);
+
+          // clean up and stop listening for message
+          window.removeEventListener('message', message)
+        }
+      }
+    }
+
+    // listen for message from child frames
+    window.addEventListener('message', message)
+
+
+  }
 }
 
 // function to count all iframe elements in a frame 
