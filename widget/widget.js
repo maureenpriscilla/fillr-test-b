@@ -17,6 +17,7 @@ function execute() {
       });
     } else if (!isTopFrame()) {
       // Child frames sends Fields up to Top Frame.
+      handleChildFrame()
     }
 	} catch (e) {
 		console.error(e)
@@ -39,6 +40,22 @@ function getFields() {
 		}
 	});
 	return fields;
+}
+
+// function to handle logic for child frame 
+function handleChildFrame() {
+  // count how many iframe element in this frame 
+  const childFrames = countIframes();
+
+  // case 1: if there's no child frame, send fields back to parent frame
+  if (childFrames === 0) {} 
+  // case 2: if there's child frame, collect fields from child frames
+  else {}
+}
+
+// function to count all iframe elements in a frame 
+function countIframes() {
+	return document.getElementsByTagName('iframe').length;
 }
 
 // Utility functions to check and get the top frame
